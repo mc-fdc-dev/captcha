@@ -44,10 +44,20 @@ impl Captcha {
             // random height place
             let height: i32 = rng.gen_range(0..(HEIGHT - 32) as i32);
             let scale = rusttype::Scale::uniform(42.0);
-            let font = rusttype::Font::try_from_bytes(include_bytes!("../fonts/Roboto-Regular.ttf")).unwrap();
+            let font =
+                rusttype::Font::try_from_bytes(include_bytes!("../fonts/Roboto-Regular.ttf"))
+                    .unwrap();
             // color is gray
             // let color = image::Rgba([128, 128, 128, 255]);
-            draw_text_mut(&mut self.image, self.color, (30 * i as i32) + 32, height as i32, scale, &font, &c.to_string());
+            draw_text_mut(
+                &mut self.image,
+                self.color,
+                (30 * i as i32) + 32,
+                height as i32,
+                scale,
+                &font,
+                &c.to_string(),
+            );
         }
         Ok(())
     }
@@ -61,7 +71,12 @@ impl Captcha {
             let y1: i32 = rng.gen_range(0..HEIGHT as i32);
             let x2: i32 = rng.gen_range(0..WIDTH as i32);
             let y2: i32 = rng.gen_range(0..HEIGHT as i32);
-            imageproc::drawing::draw_line_segment_mut(&mut self.image, (x1 as f32, y1 as f32), (x2 as f32, y2 as f32), self.color);
+            imageproc::drawing::draw_line_segment_mut(
+                &mut self.image,
+                (x1 as f32, y1 as f32),
+                (x2 as f32, y2 as f32),
+                self.color,
+            );
         }
     }
 

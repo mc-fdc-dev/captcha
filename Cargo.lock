@@ -297,6 +297,7 @@ dependencies = [
  "anyhow",
  "dotenvy",
  "gen",
+ "image",
  "tokio",
  "twilight-gateway",
  "twilight-http",
