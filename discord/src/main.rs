@@ -1,7 +1,15 @@
 use gen::Captcha;
 use twilight_http::Client as HttpClient;
 use twilight_gateway::{Intents, Shard, ShardId, Event};
+use twilight_model::application::command::CommandType;
+use twilight_model::application::interaction::{InteractionData, InteractionType};
+use twilight_model::http::interaction::{InteractionResponseType, InteractionResponse};
 use twilight_model::oauth::Application;
+use twilight_model::http::attachment::Attachment;
+use twilight_util::builder::{
+    command::CommandBuilder,
+    InteractionResponseDataBuilder,
+};
 
 use std::env;
 use std::sync::Arc;
@@ -16,10 +24,40 @@ async fn handle_event(event: Event, state: Arc<AppState>) -> anyhow::Result<()> 
         Event::Ready(_) => {
             println!("Ready!");
             let interaction_http = state.http.interaction(state.application.id);
-            
+            interaction_http.set_global_commands(&[
+                CommandBuilder::new("generate", "Test generate image", CommandType::ChatInput)
+                    .build(),
+            ]).await?;
         }
         Event::InteractionCreate(interaction) => {
-
+            let interaction_http = state.http.interaction(state.application.id);
+            match interaction.kind {
+                InteractionType::ApplicationCommand => {
+                    match interaction.data.clone().unwrap() {
+                        InteractionData::ApplicationCommand(command) => {
+                            match command.name.as_str() {
+                                "generate" => {
+                                    let mut captcha = Captcha::new();
+                                    let (text, image) = captcha.generate().unwrap();
+                                    let attachment = Attachment::from_bytes("captcha.png".to_string(), image.to_vec(), 1);
+                                    let response = InteractionResponseDataBuilder::new()
+                                        .content("Here is your captcha")
+                                        .attachments(vec![attachment])
+                                        .build();
+                                    interaction_http.create_response(interaction.id, &interaction.token, &InteractionResponse {
+                                        kind: InteractionResponseType::ChannelMessageWithSource,
+                                        data: Some(response),
+                                    })
+                                        .await?;
+                                }
+                                _ => {}
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                _ => {}
+            };
         }
         _ => {}
     }
