@@ -2,11 +2,17 @@ use gen::Captcha;
 use image::{codecs::png::PngEncoder, ColorType, ImageEncoder};
 use twilight_gateway::{Event, Intents, Shard, ShardId};
 use twilight_http::Client as HttpClient;
-use twilight_model::application::command::CommandType;
-use twilight_model::application::interaction::{InteractionData, InteractionType};
-use twilight_model::http::attachment::Attachment;
-use twilight_model::http::interaction::{InteractionResponse, InteractionResponseType};
-use twilight_model::oauth::Application;
+use twilight_model::{
+    application::{
+        command::CommandType,
+        interaction::{InteractionData, InteractionType},
+    },
+    http::{
+        attachment::Attachment,
+        interaction::{InteractionResponse, InteractionResponseType},
+    },
+    oauth::Application,
+};
 use twilight_util::builder::{command::CommandBuilder, InteractionResponseDataBuilder};
 
 use std::env;
