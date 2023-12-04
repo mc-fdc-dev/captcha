@@ -1,5 +1,3 @@
 [workspace]
 members = ["gen", "discord"]
 resolver = "2"
-name = "captcha"
-version = "0.1.0"

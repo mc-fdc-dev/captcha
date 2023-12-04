@@ -1,4 +1,5 @@
 use image::RgbaImage;
+use image::{codecs::png::PngEncoder, ColorType, ImageEncoder};
 use imageproc::drawing::draw_text_mut;
 use rand::Rng;
 
@@ -30,20 +31,13 @@ impl Captcha {
         }
     }
 
-    fn random_color(&mut self) {
-        let mut rng = rand::thread_rng();
-        let r: u8 = rng.gen_range(0..255);
-        let g: u8 = rng.gen_range(0..255);
-        let b: u8 = rng.gen_range(0..255);
-        self.color = image::Rgba([r, g, b, 255]);
-    }
-
     fn draw_text(&mut self, text: &str) -> Result<()> {
         let mut rng = rand::thread_rng();
         for (i, c) in text.chars().enumerate() {
             // random height place
             let height: i32 = rng.gen_range(0..(HEIGHT - 32) as i32);
-            let scale = rusttype::Scale::uniform(42.0);
+            let size: f32 = rng.gen_range(25.0..42.0);
+            let scale = rusttype::Scale::uniform(size);
             let font =
                 rusttype::Font::try_from_bytes(include_bytes!("../fonts/Roboto-Regular.ttf"))
                     .unwrap();
@@ -66,7 +60,7 @@ impl Captcha {
         // create three line
         let mut rng = rand::thread_rng();
         // thickness is 2
-        for _ in 0..15 {
+        for _ in 0..40 {
             let x1: i32 = rng.gen_range(0..WIDTH as i32);
             let y1: i32 = rng.gen_range(0..HEIGHT as i32);
             let x2: i32 = rng.gen_range(0..WIDTH as i32);
@@ -80,12 +74,22 @@ impl Captcha {
         }
     }
 
-    pub fn generate(&mut self) -> Result<(String, RgbaImage)> {
+    pub fn generate(&mut self) -> Result<(String, Vec<u8>)> {
         let mut rng = rand::thread_rng();
         let text: String = (0..6).map(|_| rng.gen_range(0..9).to_string()).collect();
         self.draw_text(&text)?;
         self.draw_line();
-        Ok((text, self.image.clone()))
+        let data = {
+            let mut png_data = Vec::new();
+            PngEncoder::new(&mut png_data).write_image(
+                &self.image,
+                self.image.width(),
+                self.image.height(),
+                ColorType::Rgba8,
+            )?;
+            png_data
+        };
+        Ok((text, data))
     }
 }
 
@@ -97,9 +101,9 @@ mod tests {
     fn it_works() {
         let result = add(2, 2);
         let mut captcha = Captcha::new();
-        let (text, image) = captcha.generate().unwrap();
+        let (_text, data) = captcha.generate().unwrap();
         // captcha.random_color();
-        image.save("test.png").unwrap();
+        std::fs::write("test.png", data).unwrap();
         assert_eq!(result, 4);
     }
 }

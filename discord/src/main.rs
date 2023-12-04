@@ -1,5 +1,4 @@
 use gen::Captcha;
-use image::{codecs::png::PngEncoder, ColorType, ImageEncoder};
 use twilight_gateway::{Event, Intents, Shard, ShardId};
 use twilight_http::Client as HttpClient;
 use twilight_model::{
@@ -26,7 +25,6 @@ struct AppState {
 async fn handle_event(event: Event, state: Arc<AppState>) -> anyhow::Result<()> {
     match event {
         Event::Ready(_) => {
-            println!("Ready!");
             let interaction_http = state.http.interaction(state.application.id);
             interaction_http
                 .set_global_commands(&[CommandBuilder::new(
@@ -36,6 +34,7 @@ async fn handle_event(event: Event, state: Arc<AppState>) -> anyhow::Result<()> 
                 )
                 .build()])
                 .await?;
+            log::info!("Ready!");
         }
         Event::InteractionCreate(interaction) => {
             let interaction_http = state.http.interaction(state.application.id);
@@ -46,17 +45,7 @@ async fn handle_event(event: Event, state: Arc<AppState>) -> anyhow::Result<()> 
                             match command.name.as_str() {
                                 "generate" => {
                                     let mut captcha = Captcha::new();
-                                    let (_text, image) = captcha.generate().unwrap();
-                                    let data = {
-                                        let mut png_data = Vec::new();
-                                        PngEncoder::new(&mut png_data).write_image(
-                                            &image,
-                                            image.width(),
-                                            image.height(),
-                                            ColorType::Rgba8,
-                                        )?;
-                                        png_data
-                                    };
+                                    let (_text, data) = captcha.generate().unwrap();
                                     let attachment =
                                         Attachment::from_bytes("captcha.png".to_string(), data, 1);
                                     let response = InteractionResponseDataBuilder::new()
@@ -85,6 +74,8 @@ async fn handle_event(event: Event, state: Arc<AppState>) -> anyhow::Result<()> 
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    env_logger::init();
+    log::info!("Starting bot...");
     dotenvy::dotenv().ok();
     let token = env::var("DISCORD_TOKEN")?;
     let http = HttpClient::new(token.clone());
