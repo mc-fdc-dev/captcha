@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: captcha
+  labels:
+    app: captcha
+spec:
+  selector:
+    matchLabels:
+      app: captcha
+  template:
+    metadata:
+      labels:
+        app: captcha
+    spec:
+    - name: captcha
+      image: ghcr.io/mc-fdc-dev/captcha
+      env:
+      - name: DISCORD_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: captcha-secret
+            value: token
