@@ -60,7 +60,7 @@ impl Captcha {
         // create three line
         let mut rng = rand::thread_rng();
         // thickness is 2
-        for _ in 0..40 {
+        for _ in 0..30 {
             let x1: i32 = rng.gen_range(0..WIDTH as i32);
             let y1: i32 = rng.gen_range(0..HEIGHT as i32);
             let x2: i32 = rng.gen_range(0..WIDTH as i32);
